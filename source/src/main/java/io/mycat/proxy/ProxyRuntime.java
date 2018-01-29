@@ -40,47 +40,104 @@ import io.mycat.util.TimeUtil;
 import io.mycat.util.YamlUtil;
 import io.mycat.util.classloader.DynaClassLoader;
 
+/**
+ * 运行环境信息类
+ */
 public class ProxyRuntime {
-	public static final ProxyRuntime INSTANCE = new ProxyRuntime();
-	private static final Logger logger = LoggerFactory.getLogger(ProxyRuntime.class);
 
-	/*
+	private static final Logger logger = LoggerFactory.getLogger(ProxyRuntime.class);
+	/**
+	 * 运行环境信息
+	 */
+	public static final ProxyRuntime INSTANCE = new ProxyRuntime();
+
+
+	/**
 	 * 时间更新周期
 	 */
 	private static final long TIME_UPDATE_PERIOD   = 20L;
+
+	/**
+	 * 复制心跳
+	 */
+	private static final String REPLICA_HEARTBEAT  = "REPLICA_HEARTBEAT";
 	private static final String TIME_UPDATE_TASK   = "TIME_UPDATE_TASK";
 	private static final String PROCESSOR_CHECK    = "PROCESSOR_CHECK";
 	private static final String REPLICA_ILDE_CHECK = "REPLICA_ILDE_CHECK";
-	private static final String REPLICA_HEARTBEAT  = "REPLICA_HEARTBEAT";
 
+	/**
+	 * 配置信息
+	 */
 	private MycatConfig config;
+
+	/**
+	 * sessionID
+	 */
 	private AtomicInteger sessionId = new AtomicInteger(1);
+
+	/**
+	 * reactor线程数
+	 */
 	private int nioReactorThreads = 2;
+
+	/**
+	 * 协议跟踪
+	 */
 	private boolean traceProtocol = false;
+
+	/**
+	 * 开始时间
+	 */
 	private final long startTime = System.currentTimeMillis();
 
+	/**
+	 * acceptor的
+	 */
 	private NIOAcceptor acceptor;
+
+	/**
+	 * Reactor线程池
+	 */
 	private ProxyReactorThread<?>[] reactorThreads;
+
+	/**
+	 * session 管理
+	 */
 	private SessionManager<?> sessionManager;
+
 	// 用于管理端口的Session会话管理
 	private SessionManager<AdminSession> adminSessionManager;
 	private SessionManager<ProxySession> proxySessionSessionManager;
 	private SessionManager<LBSession> lbSessionSessionManager;
 
+	/**
+	 * 管理报文处理器
+	 */
 	private AdminCommandResovler adminCmdResolver;
+
+	//环境中所有需要的定时任务调度
+
 	private static final ScheduledExecutorService schedulerService;
 
+	//业务
 	private NameableExecutor businessExecutor;
+
+	//监听
 	private ListeningExecutorService listeningExecutorService;
 
 	private Map<String,ScheduledFuture<?>> heartBeatTasks = new HashMap<>();
+
 	private NameableExecutor timerExecutor;
+
 	private ScheduledExecutorService heartbeatScheduler;
 	
 	public  long maxdataSourceInitTime = 60 * 1000L;
+
 	private int catletClassCheckSeconds = 60;
+
 	/*动态加载catlet的classs*/
 	private DynaClassLoader catletLoader = null;
+
 	private BufferPooLFactory  bufferPoolFactory = null;
 
 	/**
@@ -114,7 +171,7 @@ public class ProxyRuntime {
 		
 		bufferPoolFactory = BufferPooLFactory.getInstance();
 	}
-	
+
 	public ProxyReactorThread<?> getProxyReactorThread(ReactorEnv reactorEnv){
 		// 找到一个可用的NIO Reactor Thread，交付托管
 		if (reactorEnv.counter++ == Integer.MAX_VALUE) {

@@ -32,8 +32,22 @@ public interface SessionManager<T extends Session> {
 	public T createSession(Object keyAttachement, BufferPool bufPool, Selector nioSelector, SocketChannel channel,
 			boolean isAcceptedCon) throws IOException;
 
+	/**
+	 * 获取所有的session
+	 * @return
+	 */
 	public Collection<T> getAllSessions();
+
+	/**
+	 * 获取默认的session处理
+	 * @return
+	 */
 	public NIOHandler getDefaultSessionHandler();
+
+	/**
+	 * 移除session
+	 * @param session
+	 */
 	public void removeSession(Session session);
 
 }

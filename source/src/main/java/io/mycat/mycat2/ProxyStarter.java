@@ -30,17 +30,25 @@ public class ProxyStarter {
 	 * @throws IOException
 	 */
 	public void start() throws IOException {
+		//获取配置信息
 		ProxyRuntime runtime = ProxyRuntime.INSTANCE;
 		MycatConfig conf = runtime.getConfig();
 		ProxyConfig proxyConfig = conf.getConfig(ConfigEnum.PROXY);
+
+		//获取Mycat的配置文件 其实就是代理Proxy的的配置信息
 		ProxyBean proxybean = proxyConfig.getProxy();
+
 		// 启动NIO Acceptor
 		NIOAcceptor acceptor = new NIOAcceptor(new DirectByteBufferPool(proxybean.getBufferPoolPageSize(),
 				proxybean.getBufferPoolChunkSize(),
 				proxybean.getBufferPoolPageNumber()));
+		//启动
 		acceptor.start();
+
+		//保存acceptor
 		runtime.setAcceptor(acceptor);
 
+		//获取集群配置信息 集群信息开关
 		ClusterConfig clusterConfig = conf.getConfig(ConfigEnum.CLUSTER);
 		ClusterBean clusterBean = clusterConfig.getCluster();
 		if (clusterBean.isEnable()) {

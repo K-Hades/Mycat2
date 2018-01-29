@@ -39,15 +39,31 @@ import io.mycat.proxy.ProxyRuntime;
  * @author wuzhihui
  */
 public class MycatCore {
+
+	/**
+	 * 启动类
+	 * @param args
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 		ProxyRuntime runtime = ProxyRuntime.INSTANCE;
+
+		//初始化配置
 		runtime.setConfig(new MycatConfig());
 
+		//初始化配置文件
 		ConfigLoader.INSTANCE.loadCore();
+
+		//处理命令参数
 		solveArgs(args);
 
+		//初始化cpus核心作为业务线程的核心
 		int cpus = Runtime.getRuntime().availableProcessors();
+
+		//初始化reactor的数量
 		runtime.setNioReactorThreads(cpus);
+
+		//初始化reactor线程池
 		runtime.setReactorThreads(new MycatReactorThread[cpus]);
 
 		// runtime.setNioProxyHandler(new DefaultMySQLProxyHandler());
@@ -56,8 +72,11 @@ public class MycatCore {
 		// Debug观察MySQL协议用
 		// runtime.setSessionManager(new MySQLStudySessionManager());
 		runtime.setSessionManager(new MycatSessionManager());
+
+		//初始化环境信息
 		runtime.init();
 
+		//启动
 		ProxyStarter.INSTANCE.start();
 	}
 
