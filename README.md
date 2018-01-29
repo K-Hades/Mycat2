@@ -1,4 +1,4 @@
-# tcp-proxy
+# tcp-proxy - study
 Mycat 2.0 预览版。
 
 基于Nio实现，有效管理线程，解决高并发问题。
