@@ -89,7 +89,10 @@ public class ProxyStarter {
 
 		ProxyConfig proxyConfig = conf.getConfig(ConfigEnum.PROXY);
 		ProxyBean proxyBean = proxyConfig.getProxy();
+		//启动serverChannel 在这之前的accptor已经启动
 		if (acceptor.startServerChannel(proxyBean.getIp(), proxyBean.getPort(), ServerType.MYCAT)){
+
+			//启动reactor
 			startReactor();
 
 			// 加载配置文件信息
@@ -100,7 +103,8 @@ public class ProxyStarter {
 
 			conf.getMysqlRepMap().forEach((repName, repBean) -> {
 				repBean.initMaster();
-				repBean.getMetaBeans().forEach(metaBean -> metaBean.prepareHeartBeat(repBean, repBean.getDataSourceInitStatus()));
+				repBean.getMetaBeans().forEach(
+						metaBean -> metaBean.prepareHeartBeat(repBean, repBean.getDataSourceInitStatus()));
 			});
 		}
 
@@ -114,9 +118,10 @@ public class ProxyStarter {
 		BalancerConfig balancerConfig = conf.getConfig(ConfigEnum.BALANCER);
 		BalancerBean balancerBean = balancerConfig.getBalancer();
 		// 集群模式下才开启负载均衡服务
-        if (clusterBean.isEnable() && balancerBean.isEnable()) {
-			runtime.getAcceptor().startServerChannel(balancerBean.getIp(), balancerBean.getPort(), ServerType.LOAD_BALANCER);
-        }
+		if (clusterBean.isEnable() && balancerBean.isEnable()) {
+			runtime.getAcceptor().startServerChannel(balancerBean.getIp(), balancerBean.getPort(),
+					ServerType.LOAD_BALANCER);
+		}
 	}
 
 	public void stopProxy() {
