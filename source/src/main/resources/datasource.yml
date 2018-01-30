@@ -1,8 +1,8 @@
 replicas:
-  - name: test                      # 复制组 名称   必须唯一
-    repType: MASTER_SLAVE           # 复制类型
+  - name: test                     # 复制组 名称   必须唯一
+    repType: SINGLE_NODE           # 复制类型
     switchType: SWITCH              # 切换类型
-    balanceType: BALANCE_ALL_READ   # 读写分离类型
+    balanceType: BALANCE_ALL        # 读写分离类型
     mysqls:            
       - hostName: test              # mysql 主机名
         ip: 127.0.0.1               # ip
@@ -14,7 +14,7 @@ replicas:
         maxRetryCount: 3            # 连接重试次数
       - hostName: test1
         ip: 127.0.0.1
-        port: 3307
+        port: 3306
         user: root
         password: 123456
         minCon: 1

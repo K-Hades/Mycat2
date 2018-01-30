@@ -44,7 +44,7 @@ public class NIOAcceptor extends ProxyReactorThread<Session> {
 	}
 
 	public boolean startServerChannel(String ip, int port, ServerType serverType) throws IOException {
-		//第一次null
+		//获取服务端的serversocketchannel
 		final ServerSocketChannel serverChannel = getServerSocketChannel(serverType);
 		if (serverChannel != null && serverChannel.isOpen()) {
 			return false;

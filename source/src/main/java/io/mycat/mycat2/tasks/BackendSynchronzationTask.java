@@ -31,62 +31,64 @@ public class BackendSynchronzationTask extends AbstractBackendIOTask<MySQLSessio
     }
 
     public void syncState(MycatSession mycatSession,MySQLSession mySQLSession) throws IOException {
-        ProxyBuffer proxyBuf = mySQLSession.proxyBuffer;
-        proxyBuf.reset();
-        QueryPacket queryPacket = new QueryPacket();
-        queryPacket.packetId = 0;
-        
-        queryPacket.sql = "";
-        if(!mySQLSession.getMySQLMetaBean().isSlaveNode()){
-        	//隔离级别同步
-        	if(mycatSession.isolation != mySQLSession.isolation){
-                queryPacket.sql += mycatSession.isolation.getCmd();
-                syncCmdNum++;
-            }
-            //提交方式同步
-            if(mycatSession.autoCommit != mySQLSession.autoCommit){
-                queryPacket.sql += mycatSession.autoCommit.getCmd();
-                syncCmdNum++;
-            }
-		}
-        //字符集同步
-        if (mycatSession.charSet.charsetIndex != mySQLSession.charSet.charsetIndex) {
-            //字符集同步,直接取主节点的字符集映射
-            //1.因为主节点必定存在
-            //2.从节点和主节点的mysql版本号必定一致
-            //3.所以直接取主节点
-            String charsetName = mySQLSession.getMySQLMetaBean().INDEX_TO_CHARSET.get(mycatSession.charSet.charsetIndex);
-            queryPacket.sql += "SET names " + charsetName + ";";
-            syncCmdNum++;
+      ProxyBuffer proxyBuf = mySQLSession.proxyBuffer;
+      proxyBuf.reset();
+      QueryPacket queryPacket = new QueryPacket();
+      queryPacket.packetId = 0;
+
+      queryPacket.sql = "";
+      if (!mySQLSession.getMySQLMetaBean().isSlaveNode()) {
+        //隔离级别同步
+        if (mycatSession.isolation != mySQLSession.isolation) {
+          queryPacket.sql += mycatSession.isolation.getCmd();
+          syncCmdNum++;
         }
-        if (syncCmdNum > 0) {
-        	logger.debug("synchronzation state [{}]to bakcend.session={}",queryPacket.sql,mySQLSession.toString());
-            queryPacket.write(proxyBuf);
-            proxyBuf.flip();
-            proxyBuf.readIndex = proxyBuf.writeIndex;
-            try {
-            	session.writeToChannel();
-			}catch(ClosedChannelException e){
-				logger.debug("synchronzation state task end ");
-				if(session.getMycatSession()!=null){
-					session.close(false, "backend connection is closed!");
-				}
-				session.close(false, e.getMessage());
-				return;
-			} catch (Exception e) {
-				String errmsg = "backend state sync Error. " + e.getMessage();
-				errPkg = new ErrorPacket();
-				errPkg.packetId = 1;
-				errPkg.errno = ErrorCode.ER_UNKNOWN_ERROR;
-				errPkg.message = errmsg;
-				logger.error(errmsg);
-				e.printStackTrace();
-				this.finished(false);
-				
-			}
-        }else{
-        	finished(true);
+        //提交方式同步
+        if (mycatSession.autoCommit != mySQLSession.autoCommit) {
+          queryPacket.sql += mycatSession.autoCommit.getCmd();
+          syncCmdNum++;
         }
+      }
+      //字符集同步
+      if (mycatSession.charSet.charsetIndex != mySQLSession.charSet.charsetIndex) {
+        //字符集同步,直接取主节点的字符集映射
+        //1.因为主节点必定存在
+        //2.从节点和主节点的mysql版本号必定一致
+        //3.所以直接取主节点
+        String charsetName = mySQLSession.getMySQLMetaBean().INDEX_TO_CHARSET
+            .get(mycatSession.charSet.charsetIndex);
+        queryPacket.sql += "SET names " + charsetName + ";";
+        syncCmdNum++;
+      }
+      if (syncCmdNum > 0) {
+        logger.debug("synchronzation state [{}]to bakcend.session={}", queryPacket.sql,
+            mySQLSession.toString());
+        queryPacket.write(proxyBuf);
+        proxyBuf.flip();
+        proxyBuf.readIndex = proxyBuf.writeIndex;
+        try {
+          session.writeToChannel();
+        } catch (ClosedChannelException e) {
+          logger.debug("synchronzation state task end ");
+          if (session.getMycatSession() != null) {
+            session.close(false, "backend connection is closed!");
+          }
+          session.close(false, e.getMessage());
+          return;
+        } catch (Exception e) {
+          String errmsg = "backend state sync Error. " + e.getMessage();
+          errPkg = new ErrorPacket();
+          errPkg.packetId = 1;
+          errPkg.errno = ErrorCode.ER_UNKNOWN_ERROR;
+          errPkg.message = errmsg;
+          logger.error(errmsg);
+          e.printStackTrace();
+          this.finished(false);
+
+        }
+      } else {
+        finished(true);
+      }
     }
     
     public int getSyncCmdNum(){

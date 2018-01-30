@@ -79,34 +79,36 @@ public class MySQLMetaBean {
         CopyOnWriteArrayList<MySQLSession > list = new CopyOnWriteArrayList<MySQLSession >();
         BackendGetConnectionTask getConTask = new BackendGetConnectionTask(list, dsMetaBean.getMinCon());
         for (int i = 0; i < dsMetaBean.getMinCon(); i++) {
-        	MycatReactorThread reactorThread = reactorThreads[i % reactorSize];
-            reactorThread.addNIOJob(() -> {
-                try {
-                    reactorThread.createSession(this, null, (optSession, sender, exeSucces, retVal) -> {
-                        if (exeSucces) {
-                            //设置当前连接 读写分离属性
-                            optSession.setDefaultChannelRead(this.isSlaveNode());
-                            if (this.charsetLoaded == false) {
-								this.charsetLoaded = true;
-                                logger.info("load charset for MySQLMetaBean {}:{}", this.dsMetaBean.getIp(), this.dsMetaBean.getPort());
-                                BackendCharsetReadTask backendCharsetReadTask = new BackendCharsetReadTask(optSession, this,getConTask);
-                                optSession.setCurNIOHandler(backendCharsetReadTask);
-                                backendCharsetReadTask.readCharset();
-                            } else {
-                            	getConTask.finished(optSession,sender,exeSucces,retVal);
-							}
-							optSession.change2ReadOpts();
-							reactorThread.addMySQLSession(this, optSession);
-						} else {
-							this.charsetLoaded = false;
-							getConTask.finished(optSession,sender,exeSucces,retVal);
-                        }
-                    });
-                } catch (IOException e) {
-                	logger.error("error to load charset for metaBean {}", this, e);
-                }
-            });
-        }
+					MycatReactorThread reactorThread = reactorThreads[i % reactorSize];
+					reactorThread.addNIOJob(() -> {
+						try {
+							reactorThread.createSession(this, null, (optSession, sender, exeSucces, retVal) -> {
+								if (exeSucces) {
+									//设置当前连接 读写分离属性
+									optSession.setDefaultChannelRead(this.isSlaveNode());
+									if (this.charsetLoaded == false) {
+										this.charsetLoaded = true;
+										logger.info("load charset for MySQLMetaBean {}:{}", this.dsMetaBean.getIp(),
+												this.dsMetaBean.getPort());
+										BackendCharsetReadTask backendCharsetReadTask = new BackendCharsetReadTask(
+												optSession, this, getConTask);
+										optSession.setCurNIOHandler(backendCharsetReadTask);
+										backendCharsetReadTask.readCharset();
+									} else {
+										getConTask.finished(optSession, sender, exeSucces, retVal);
+									}
+									optSession.change2ReadOpts();
+									reactorThread.addMySQLSession(this, optSession);
+								} else {
+									this.charsetLoaded = false;
+									getConTask.finished(optSession, sender, exeSucces, retVal);
+								}
+							});
+						} catch (IOException e) {
+							logger.error("error to load charset for metaBean {}", this, e);
+						}
+					});
+				}
     }
     
 	public void doHeartbeat() {

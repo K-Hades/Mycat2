@@ -191,7 +191,7 @@ public class MycatReactorThread extends ProxyReactorThread<MycatSession> {
         
         //4. 从ds中获取已经建立的连接
         LinkedList<MySQLSession> mySQLSessionList = mySQLSessionMap.get(mySQLMetaBean);
-  		if (mySQLSessionList != null && !mySQLSessionList.isEmpty()) {
+  		  if (mySQLSessionList != null && !mySQLSessionList.isEmpty()) {
   			mysqlSession = mySQLSessionList.removeLast();
   			if(mysqlSession!=null){
   				if(logger.isDebugEnabled()){

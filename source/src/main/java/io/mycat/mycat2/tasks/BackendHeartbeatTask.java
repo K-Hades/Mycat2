@@ -51,19 +51,19 @@ public class BackendHeartbeatTask extends BackendIOTaskWithResultSet<MySQLSessio
         this.repBean = metaBean.getRepBean();
         this.optSession = optSession;
     }
-    
-    public void doHeartbeat(){
-        optSession.proxyBuffer.reset();
+
+	public void doHeartbeat() {
+		optSession.proxyBuffer.reset();
 		CommandPacket packet = new CommandPacket();
 		packet.packetId = 0;
 		packet.command = MySQLPacket.COM_QUERY;
 		optSession.getSessionAttrMap().put(SessionKeyEnum.SESSION_KEY_CONN_IDLE_FLAG.getKey(), false);
 
-//		try {
-			packet.arg = repBean.getReplicaBean().getRepType().getHearbeatSQL().getBytes();
-//		} catch (UnsupportedEncodingException e) {
-//			throw new RuntimeException(e);
-//		}
+		//		try {
+		packet.arg = repBean.getReplicaBean().getRepType().getHearbeatSQL().getBytes();
+		//		} catch (UnsupportedEncodingException e) {
+		//			throw new RuntimeException(e);
+		//		}
 		packet.write(optSession.proxyBuffer);
 		optSession.proxyBuffer.flip();
 		optSession.proxyBuffer.readIndex = optSession.proxyBuffer.writeIndex;
@@ -71,11 +71,11 @@ public class BackendHeartbeatTask extends BackendIOTaskWithResultSet<MySQLSessio
 			optSession.writeToChannel();
 		} catch (IOException e) {
 			e.printStackTrace();
-			logger.error(" The backend heartbeat task write to mysql is error . {}",e.getMessage());
+			logger.error(" The backend heartbeat task write to mysql is error . {}", e.getMessage());
 			detector.getHeartbeat().setDbSynStatus(DBHeartbeat.DB_SYN_ERROR);
-			detector.getHeartbeat().setResult(DBHeartbeat.ERROR_STATUS, detector,  null);
+			detector.getHeartbeat().setResult(DBHeartbeat.ERROR_STATUS, detector, null);
 		}
-    }
+	}
 
 	@Override
 	void onRsColCount(MySQLSession session) {

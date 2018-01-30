@@ -17,10 +17,25 @@ import io.mycat.proxy.ProxyBuffer;
  */
 public abstract class AbstractBackendIOTask<T extends AbstractMySQLSession> implements NIOHandler<T> {
 
+	/**
+	 * 异步回调
+	 */
 	protected AsynTaskCallBack<T> callBack;
+
+	/**
+	 * session会话
+	 */
 	protected T session;
+	/**
+	 * 上一次的buffer
+	 */
 	protected ProxyBuffer prevProxyBuffer;
+
+	/**
+	 * 错误包
+	 */
 	protected ErrorPacket errPkg;
+
 	protected boolean useNewBuffer = false;
 
 	public AbstractBackendIOTask(T session, boolean useNewBuffer) {

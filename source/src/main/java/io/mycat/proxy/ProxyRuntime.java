@@ -191,9 +191,9 @@ public class ProxyRuntime {
 			long replicaHeartbeat = heartbeatConfig.getHeartbeat().getReplicaHeartbeatPeriod();
 			heartBeatTasks.put(REPLICA_HEARTBEAT,
 					heartbeatScheduler.scheduleAtFixedRate(replicaHeartbeat(),
-														  0,
-														  replicaHeartbeat,
-														  TimeUnit.MILLISECONDS));
+							0,
+							replicaHeartbeat,
+							TimeUnit.MILLISECONDS));
 		}
 	}
 
